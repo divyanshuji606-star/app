@@ -3,42 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hisab Pro - Tabular</title>
+    <title>Hisab Pro - Secure</title>
     <style>
         :root { --primary: #0284c7; --bg: #f8fafc; --card: #ffffff; --text: #0f172a; --danger: #ef4444; border-color: #e2e8f0; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
         body { background: var(--bg); color: var(--text); }
         
+        /* Lock Screen */
+        #authScreen { position: fixed; inset: 0; background: var(--primary); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; color: white; padding: 20px; text-align: center; }
+        .auth-box { background: white; padding: 30px; border-radius: 12px; color: var(--text); box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 100%; max-width: 350px; }
+        .auth-box input { width: 100%; padding: 12px; margin: 15px 0; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1.1rem; text-align: center; letter-spacing: 2px; outline: none; }
+        .auth-box input:focus { border-color: var(--primary); }
+        .auth-box button { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; }
+        
+        /* Main App App */
+        #mainApp { display: none; }
         header { background: var(--primary); color: white; padding: 15px 20px; display: flex; align-items: center; gap: 15px; position: sticky; top: 0; z-index: 100; }
         #backBtn { background: transparent; border: none; color: white; font-size: 24px; cursor: pointer; display: none; }
         
-        .container { padding: 20px; max-width: 1000px; margin: 0 auto; }
+        .container { padding: 20px; max-width: 1200px; margin: 0 auto; }
         .screen { display: none; }
         .screen.active { display: block; }
 
-        /* Grid for Locations */
         .grid { display: grid; gap: 15px; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
-        .card { background: var(--card); padding: 15px; border-radius: 10px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .card { background: var(--card); padding: 15px; border-radius: 10px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
         .card h3 { cursor: pointer; flex: 1; color: var(--primary); }
-        .btn-del { background: #fee2e2; color: var(--danger); border: none; padding: 6px 10px; border-radius: 5px; cursor: pointer; }
+        .btn-del { background: #fee2e2; color: var(--danger); border: none; padding: 6px 10px; border-radius: 5px; cursor: pointer; font-size: 0.85rem;}
 
-        /* Tabular Format */
-        .table-responsive { overflow-x: auto; background: white; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid var(--border-color); }
+        .table-responsive { overflow-x: auto; background: white; border-radius: 10px; border: 1px solid var(--border-color); }
         table { width: 100%; border-collapse: collapse; min-width: 800px; }
-        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; }
         th { background: #f1f5f9; font-weight: 600; white-space: nowrap; }
         tr:hover { background: #f8fafc; }
-        .text-center { text-align: center; }
 
-        /* Floating Action Button */
         .fab { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: var(--primary); color: white; font-size: 30px; border: none; box-shadow: 0 4px 10px rgba(2, 132, 199, 0.4); cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 50; }
 
         /* Modals */
         .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 1000; }
-        .modal { background: white; padding: 20px; border-radius: 12px; width: 100%; max-width: 400px; }
-        .input-group { margin-bottom: 15px; }
-        .input-group label { display: block; margin-bottom: 5px; font-size: 0.9rem; font-weight: 500; }
-        .input-group input, .input-group select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; }
+        .modal { background: white; padding: 20px; border-radius: 12px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+        .input-group { margin-bottom: 12px; }
+        .input-group label { display: block; margin-bottom: 5px; font-size: 0.85rem; font-weight: 600; color: #475569;}
+        .input-group input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; }
+        
+        /* Form Grid for 6 options */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 15px;}
+        
         .btn-row { display: flex; justify-content: flex-end; gap: 10px; mt: 10px; }
         .btn { padding: 10px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
         .btn-save { background: var(--primary); color: white; }
@@ -46,38 +55,48 @@
 </head>
 <body>
 
-    <header>
-        <button id="backBtn" onclick="goHome()">←</button>
-        <h2 id="pageTitle">Locations</h2>
-    </header>
-
-    <div class="container">
-        <div id="screen-locations" class="screen active">
-            <div class="grid" id="locList">Loading...</div>
-            <button class="fab" onclick="showModal('locModal')">+</button>
+    <div id="authScreen">
+        <div class="auth-box">
+            <h2>🔒 Smart Hisab</h2>
+            <p style="font-size: 0.9rem; color: #64748b; margin-top: 5px;">Enter password to continue</p>
+            <input type="password" id="passInput" placeholder="******">
+            <button onclick="checkPassword()">Unlock</button>
         </div>
+    </div>
 
-        <div id="screen-table" class="screen">
-            <div class="table-responsive">
-                <table id="dataTable">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Details</th>
-                            <th class="text-center">1. Saaman Gaya</th>
-                            <th class="text-center">2. Kam Hua</th>
-                            <th class="text-center">3. Commision</th>
-                            <th class="text-center">4. Bacha (कच्चा)</th>
-                            <th class="text-center">5. Mila</th>
-                            <th class="text-center">6. Bakaya</th>
-                            <th class="text-center">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody">
-                        </tbody>
-                </table>
+    <div id="mainApp">
+        <header>
+            <button id="backBtn" onclick="goHome()">←</button>
+            <h2 id="pageTitle">Locations</h2>
+        </header>
+
+        <div class="container">
+            <div id="screen-locations" class="screen active">
+                <div class="grid" id="locList">Loading...</div>
+                <button class="fab" onclick="showModal('locModal')">+</button>
             </div>
-            <button class="fab" onclick="showModal('entryModal')">+</button>
+
+            <div id="screen-table" class="screen">
+                <div class="table-responsive">
+                    <table id="dataTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Details</th>
+                                <th>1. Saaman Gaya</th>
+                                <th>2. Kam Hua</th>
+                                <th>3. Commision</th>
+                                <th>4. Bacha (कच्चा)</th>
+                                <th>5. Mila</th>
+                                <th>6. Bakaya</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
+                <button class="fab" onclick="showModal('entryModal')">+</button>
+            </div>
         </div>
     </div>
 
@@ -96,37 +115,54 @@
 
     <div class="modal-bg" id="entryModal">
         <div class="modal">
-            <h3>Add Entry</h3>
-            <div class="input-group" style="margin-top: 15px;">
-                <label>Category</label>
-                <select id="entryCat">
-                    <option value="Saaman Gaya">1. Saaman Gaya</option>
-                    <option value="Kam Hua">2. Kam Hua</option>
-                    <option value="Commision">3. Commision</option>
-                    <option value="Bacha">4. Bacha (कच्चा)</option>
-                    <option value="Mila">5. Mila</option>
-                    <option value="Bakaya">6. Bakaya</option>
-                </select>
-            </div>
+            <h3>Naya Hisab Likhain</h3>
+            <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 15px;">Jo field zaruri ho sirf wahi bharein, baaki khali chhod dein.</p>
+            
             <div class="input-group">
-                <label>Details</label>
-                <input type="text" id="entryDetails" placeholder="Item ya reason likhein">
+                <label>Date & Details (Zaruri)</label>
+                <input type="text" id="entryDetails" placeholder="Example: 50 Bori Cement, 10 March">
             </div>
-            <div class="input-group">
-                <label>Amount / Quantity</label>
-                <input type="text" id="entryAmount" placeholder="₹ Amount ya Count">
+
+            <div class="form-grid">
+                <div class="input-group"><label>1. Saaman Gaya</label><input type="text" id="val1" placeholder="-"></div>
+                <div class="input-group"><label>2. Kam Hua</label><input type="text" id="val2" placeholder="-"></div>
+                <div class="input-group"><label>3. Commision</label><input type="text" id="val3" placeholder="-"></div>
+                <div class="input-group"><label>4. Bacha (कच्चा)</label><input type="text" id="val4" placeholder="-"></div>
+                <div class="input-group"><label>5. Mila</label><input type="text" id="val5" placeholder="-"></div>
+                <div class="input-group"><label>6. Bakaya</label><input type="text" id="val6" placeholder="-"></div>
             </div>
+
             <div class="btn-row">
                 <button class="btn" onclick="closeModals()">Cancel</button>
-                <button class="btn btn-save" onclick="addEntry()">Save</button>
+                <button class="btn btn-save" onclick="addEntry()">Save Entry</button>
             </div>
         </div>
     </div>
 
     <script>
+        // Password Logic
+        function checkPassword() {
+            const pwd = document.getElementById('passInput').value;
+            if(pwd === '220582') {
+                document.getElementById('authScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                loadLocations(); // Data tabhi load hoga jab login hoga
+            } else {
+                alert('Galat Password!');
+                document.getElementById('passInput').value = '';
+            }
+        }
+
+        // Enter key se bhi login hone ke liye
+        document.getElementById("passInput").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                checkPassword();
+            }
+        });
+
         let currentLocId = null;
 
-        // UI Helpers
         const showModal = (id) => document.getElementById(id).style.display = 'flex';
         const closeModals = () => document.querySelectorAll('.modal-bg').forEach(m => m.style.display = 'none');
         
@@ -148,7 +184,6 @@
             loadEntries();
         }
 
-        // API Calls
         async function loadLocations() {
             const res = await fetch('/api/locations');
             const data = await res.json();
@@ -184,50 +219,56 @@
             const data = await res.json();
             const tbody = document.getElementById('tableBody');
             
-            const cats = ["Saaman Gaya", "Kam Hua", "Commision", "Bacha", "Mila", "Bakaya"];
-            
-            tbody.innerHTML = data.map(ent => {
-                let columns = cats.map(c => `<td class="text-center">${ent.category === c ? ent.amount : '-'}</td>`).join('');
-                return `
-                    <tr>
-                        <td>${ent.date}</td>
-                        <td>${ent.details}</td>
-                        ${columns}
-                        <td class="text-center">
-                            <button class="btn-del" onclick="delEntry('${ent.id}')">Del</button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
+            tbody.innerHTML = data.map(ent => `
+                <tr>
+                    <td>${ent.date}</td>
+                    <td><strong>${ent.details}</strong></td>
+                    <td>${ent.saaman_gaya || '-'}</td>
+                    <td>${ent.kam_hua || '-'}</td>
+                    <td>${ent.commision || '-'}</td>
+                    <td>${ent.bacha || '-'}</td>
+                    <td>${ent.mila || '-'}</td>
+                    <td>${ent.bakaya || '-'}</td>
+                    <td>
+                        <button class="btn-del" onclick="delEntry('${ent.id}')">Del</button>
+                    </td>
+                </tr>
+            `).join('');
         }
 
         async function addEntry() {
-            const cat = document.getElementById('entryCat').value;
             const details = document.getElementById('entryDetails').value;
-            const amount = document.getElementById('entryAmount').value;
-            const date = new Date().toLocaleDateString('en-IN');
-            
-            if(!details || !amount) return alert('Details aur Amount bharna zaroori hai');
+            if(!details) return alert('Details bharna zaroori hai (jaise kis cheez ka hisab hai)');
+
+            const payload = {
+                details: details,
+                date: new Date().toLocaleDateString('en-IN'),
+                saaman_gaya: document.getElementById('val1').value,
+                kam_hua: document.getElementById('val2').value,
+                commision: document.getElementById('val3').value,
+                bacha: document.getElementById('val4').value,
+                mila: document.getElementById('val5').value,
+                bakaya: document.getElementById('val6').value
+            };
 
             await fetch(`/api/entries/${currentLocId}`, {
                 method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({category: cat, details: details, amount: amount, date: date})
+                body: JSON.stringify(payload)
             });
             
+            // Clear inputs
             document.getElementById('entryDetails').value = '';
-            document.getElementById('entryAmount').value = '';
+            for(let i=1; i<=6; i++) document.getElementById('val'+i).value = '';
+            
             closeModals();
             loadEntries();
         }
 
         async function delEntry(id) {
-            if(!confirm('Ye entry delete kar dein?')) return;
+            if(!confirm('Ye entry pakka delete karni hai?')) return;
             await fetch(`/api/entries/delete/${id}`, { method: 'DELETE' });
             loadEntries();
         }
-
-        // Init
-        loadLocations();
     </script>
 </body>
 </html>
