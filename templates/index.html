@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hisab Pro - Tabular</title>
+    <style>
+        :root { --primary: #0284c7; --bg: #f8fafc; --card: #ffffff; --text: #0f172a; --danger: #ef4444; border-color: #e2e8f0; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background: var(--bg); color: var(--text); }
+        
+        header { background: var(--primary); color: white; padding: 15px 20px; display: flex; align-items: center; gap: 15px; position: sticky; top: 0; z-index: 100; }
+        #backBtn { background: transparent; border: none; color: white; font-size: 24px; cursor: pointer; display: none; }
+        
+        .container { padding: 20px; max-width: 1000px; margin: 0 auto; }
+        .screen { display: none; }
+        .screen.active { display: block; }
+
+        /* Grid for Locations */
+        .grid { display: grid; gap: 15px; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
+        .card { background: var(--card); padding: 15px; border-radius: 10px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .card h3 { cursor: pointer; flex: 1; color: var(--primary); }
+        .btn-del { background: #fee2e2; color: var(--danger); border: none; padding: 6px 10px; border-radius: 5px; cursor: pointer; }
+
+        /* Tabular Format */
+        .table-responsive { overflow-x: auto; background: white; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid var(--border-color); }
+        table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; }
+        th { background: #f1f5f9; font-weight: 600; white-space: nowrap; }
+        tr:hover { background: #f8fafc; }
+        .text-center { text-align: center; }
+
+        /* Floating Action Button */
+        .fab { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: var(--primary); color: white; font-size: 30px; border: none; box-shadow: 0 4px 10px rgba(2, 132, 199, 0.4); cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 50; }
+
+        /* Modals */
+        .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 1000; }
+        .modal { background: white; padding: 20px; border-radius: 12px; width: 100%; max-width: 400px; }
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; margin-bottom: 5px; font-size: 0.9rem; font-weight: 500; }
+        .input-group input, .input-group select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; }
+        .btn-row { display: flex; justify-content: flex-end; gap: 10px; mt: 10px; }
+        .btn { padding: 10px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .btn-save { background: var(--primary); color: white; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <button id="backBtn" onclick="goHome()">←</button>
+        <h2 id="pageTitle">Locations</h2>
+    </header>
+
+    <div class="container">
+        <div id="screen-locations" class="screen active">
+            <div class="grid" id="locList">Loading...</div>
+            <button class="fab" onclick="showModal('locModal')">+</button>
+        </div>
+
+        <div id="screen-table" class="screen">
+            <div class="table-responsive">
+                <table id="dataTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Details</th>
+                            <th class="text-center">1. Saaman Gaya</th>
+                            <th class="text-center">2. Kam Hua</th>
+                            <th class="text-center">3. Commision</th>
+                            <th class="text-center">4. Bacha (कच्चा)</th>
+                            <th class="text-center">5. Mila</th>
+                            <th class="text-center">6. Bakaya</th>
+                            <th class="text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        </tbody>
+                </table>
+            </div>
+            <button class="fab" onclick="showModal('entryModal')">+</button>
+        </div>
+    </div>
+
+    <div class="modal-bg" id="locModal">
+        <div class="modal">
+            <h3>Add New Location</h3>
+            <div class="input-group" style="margin-top: 15px;">
+                <input type="text" id="locName" placeholder="Location Name (e.g., GKP 1)">
+            </div>
+            <div class="btn-row">
+                <button class="btn" onclick="closeModals()">Cancel</button>
+                <button class="btn btn-save" onclick="addLocation()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-bg" id="entryModal">
+        <div class="modal">
+            <h3>Add Entry</h3>
+            <div class="input-group" style="margin-top: 15px;">
+                <label>Category</label>
+                <select id="entryCat">
+                    <option value="Saaman Gaya">1. Saaman Gaya</option>
+                    <option value="Kam Hua">2. Kam Hua</option>
+                    <option value="Commision">3. Commision</option>
+                    <option value="Bacha">4. Bacha (कच्चा)</option>
+                    <option value="Mila">5. Mila</option>
+                    <option value="Bakaya">6. Bakaya</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Details</label>
+                <input type="text" id="entryDetails" placeholder="Item ya reason likhein">
+            </div>
+            <div class="input-group">
+                <label>Amount / Quantity</label>
+                <input type="text" id="entryAmount" placeholder="₹ Amount ya Count">
+            </div>
+            <div class="btn-row">
+                <button class="btn" onclick="closeModals()">Cancel</button>
+                <button class="btn btn-save" onclick="addEntry()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentLocId = null;
+
+        // UI Helpers
+        const showModal = (id) => document.getElementById(id).style.display = 'flex';
+        const closeModals = () => document.querySelectorAll('.modal-bg').forEach(m => m.style.display = 'none');
+        
+        function goHome() {
+            document.getElementById('screen-table').classList.remove('active');
+            document.getElementById('screen-locations').classList.add('active');
+            document.getElementById('backBtn').style.display = 'none';
+            document.getElementById('pageTitle').innerText = 'Locations';
+            currentLocId = null;
+            loadLocations();
+        }
+
+        function openLocation(id, name) {
+            currentLocId = id;
+            document.getElementById('screen-locations').classList.remove('active');
+            document.getElementById('screen-table').classList.add('active');
+            document.getElementById('backBtn').style.display = 'block';
+            document.getElementById('pageTitle').innerText = name + " - Hisab";
+            loadEntries();
+        }
+
+        // API Calls
+        async function loadLocations() {
+            const res = await fetch('/api/locations');
+            const data = await res.json();
+            const list = document.getElementById('locList');
+            list.innerHTML = data.map(l => `
+                <div class="card">
+                    <h3 onclick="openLocation('${l.id}', '${l.name}')">📁 ${l.name}</h3>
+                    <button class="btn-del" onclick="delLocation('${l.id}')">Delete</button>
+                </div>
+            `).join('');
+        }
+
+        async function addLocation() {
+            const name = document.getElementById('locName').value;
+            if(!name) return;
+            await fetch('/api/locations', {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({name})
+            });
+            document.getElementById('locName').value = '';
+            closeModals();
+            loadLocations();
+        }
+
+        async function delLocation(id) {
+            if(!confirm('Folder aur iski saari entry delete ho jayegi. Pakka?')) return;
+            await fetch(`/api/locations/${id}`, { method: 'DELETE' });
+            loadLocations();
+        }
+
+        async function loadEntries() {
+            const res = await fetch(`/api/entries/${currentLocId}`);
+            const data = await res.json();
+            const tbody = document.getElementById('tableBody');
+            
+            const cats = ["Saaman Gaya", "Kam Hua", "Commision", "Bacha", "Mila", "Bakaya"];
+            
+            tbody.innerHTML = data.map(ent => {
+                let columns = cats.map(c => `<td class="text-center">${ent.category === c ? ent.amount : '-'}</td>`).join('');
+                return `
+                    <tr>
+                        <td>${ent.date}</td>
+                        <td>${ent.details}</td>
+                        ${columns}
+                        <td class="text-center">
+                            <button class="btn-del" onclick="delEntry('${ent.id}')">Del</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function addEntry() {
+            const cat = document.getElementById('entryCat').value;
+            const details = document.getElementById('entryDetails').value;
+            const amount = document.getElementById('entryAmount').value;
+            const date = new Date().toLocaleDateString('en-IN');
+            
+            if(!details || !amount) return alert('Details aur Amount bharna zaroori hai');
+
+            await fetch(`/api/entries/${currentLocId}`, {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({category: cat, details: details, amount: amount, date: date})
+            });
+            
+            document.getElementById('entryDetails').value = '';
+            document.getElementById('entryAmount').value = '';
+            closeModals();
+            loadEntries();
+        }
+
+        async function delEntry(id) {
+            if(!confirm('Ye entry delete kar dein?')) return;
+            await fetch(`/api/entries/delete/${id}`, { method: 'DELETE' });
+            loadEntries();
+        }
+
+        // Init
+        loadLocations();
+    </script>
+</body>
+</html>
