@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hisab Pro - Secure</title>
+    <title>Hisab Pro - Ledger Book</title>
     <style>
         :root { --primary: #0284c7; --bg: #f8fafc; --card: #ffffff; --text: #0f172a; --danger: #ef4444; border-color: #e2e8f0; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
@@ -27,12 +27,12 @@
 
         .grid { display: grid; gap: 15px; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
         .card { background: var(--card); padding: 15px; border-radius: 10px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
-        .card h3 { cursor: pointer; flex: 1; color: var(--primary); }
+        .card h3 { cursor: pointer; flex: 1; color: var(--primary); margin: 0; }
         .btn-del { background: #fee2e2; color: var(--danger); border: none; padding: 6px 10px; border-radius: 5px; cursor: pointer; font-size: 0.85rem;}
 
-        .table-responsive { overflow-x: auto; background: white; border-radius: 10px; border: 1px solid var(--border-color); }
+        .table-responsive { overflow-x: auto; background: white; border-radius: 10px; border: 1px solid var(--border-color); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         table { width: 100%; border-collapse: collapse; min-width: 800px; }
-        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; }
         th { background: #f1f5f9; font-weight: 600; white-space: nowrap; }
         tr:hover { background: #f8fafc; }
 
@@ -48,7 +48,7 @@
         /* Form Grid for 6 options */
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 15px;}
         
-        .btn-row { display: flex; justify-content: flex-end; gap: 10px; mt: 10px; }
+        .btn-row { display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; }
         .btn { padding: 10px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
         .btn-save { background: var(--primary); color: white; }
     </style>
@@ -57,10 +57,10 @@
 
     <div id="authScreen">
         <div class="auth-box">
-            <h2>🔒 Smart Hisab</h2>
-            <p style="font-size: 0.9rem; color: #64748b; margin-top: 5px;">Enter password to continue</p>
+            <h2>🔒 Ledger Lock</h2>
+            <p style="font-size: 0.9rem; color: #64748b; margin-top: 5px;">Password enter karein</p>
             <input type="password" id="passInput" placeholder="******">
-            <button onclick="checkPassword()">Unlock</button>
+            <button onclick="checkPassword()">Unlock App</button>
         </div>
     </div>
 
@@ -115,8 +115,8 @@
 
     <div class="modal-bg" id="entryModal">
         <div class="modal">
-            <h3>Naya Hisab Likhain</h3>
-            <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 15px;">Jo field zaruri ho sirf wahi bharein, baaki khali chhod dein.</p>
+            <h3>Ledger Entry Daalein</h3>
+            <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 15px;">Ek hi baar me saara hisab bhar dein. Jo box khali chhodenge wo '-' show hoga.</p>
             
             <div class="input-group">
                 <label>Date & Details (Zaruri)</label>
@@ -140,20 +140,20 @@
     </div>
 
     <script>
-        // Password Logic
+        // Password Logic: 220582
         function checkPassword() {
             const pwd = document.getElementById('passInput').value;
             if(pwd === '220582') {
                 document.getElementById('authScreen').style.display = 'none';
                 document.getElementById('mainApp').style.display = 'block';
-                loadLocations(); // Data tabhi load hoga jab login hoga
+                loadLocations(); // API call tabhi hogi jab password sahi hoga
             } else {
-                alert('Galat Password!');
+                alert('Galat Password! Kripya sahi password daalein.');
                 document.getElementById('passInput').value = '';
             }
         }
 
-        // Enter key se bhi login hone ke liye
+        // Enter key support for password
         document.getElementById("passInput").addEventListener("keypress", function(event) {
             if (event.key === "Enter") {
                 event.preventDefault();
@@ -184,16 +184,26 @@
             loadEntries();
         }
 
+        // Use relative URLs so it works on localhost AND when deployed
         async function loadLocations() {
-            const res = await fetch('/api/locations');
-            const data = await res.json();
-            const list = document.getElementById('locList');
-            list.innerHTML = data.map(l => `
-                <div class="card">
-                    <h3 onclick="openLocation('${l.id}', '${l.name}')">📁 ${l.name}</h3>
-                    <button class="btn-del" onclick="delLocation('${l.id}')">Delete</button>
-                </div>
-            `).join('');
+            try {
+                const res = await fetch('/api/locations');
+                const data = await res.json();
+                const list = document.getElementById('locList');
+                if(data.length === 0) {
+                    list.innerHTML = '<p style="color:#64748b; padding:10px;">Koi location nahi hai. + dabayein.</p>';
+                } else {
+                    list.innerHTML = data.map(l => `
+                        <div class="card">
+                            <h3 onclick="openLocation('${l.id}', '${l.name}')">📁 ${l.name}</h3>
+                            <button class="btn-del" onclick="delLocation('${l.id}')">Delete</button>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error("Error fetching locations:", error);
+                alert("Server se connect nahi ho pa raha. Kya Flask server running hai?");
+            }
         }
 
         async function addLocation() {
@@ -219,21 +229,25 @@
             const data = await res.json();
             const tbody = document.getElementById('tableBody');
             
-            tbody.innerHTML = data.map(ent => `
-                <tr>
-                    <td>${ent.date}</td>
-                    <td><strong>${ent.details}</strong></td>
-                    <td>${ent.saaman_gaya || '-'}</td>
-                    <td>${ent.kam_hua || '-'}</td>
-                    <td>${ent.commision || '-'}</td>
-                    <td>${ent.bacha || '-'}</td>
-                    <td>${ent.mila || '-'}</td>
-                    <td>${ent.bakaya || '-'}</td>
-                    <td>
-                        <button class="btn-del" onclick="delEntry('${ent.id}')">Del</button>
-                    </td>
-                </tr>
-            `).join('');
+            if(data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:#64748b;">Koi entry nahi hai. Nayi entry banayein.</td></tr>';
+            } else {
+                tbody.innerHTML = data.map(ent => `
+                    <tr>
+                        <td>${ent.date}</td>
+                        <td><strong>${ent.details}</strong></td>
+                        <td>${ent.saaman_gaya || '-'}</td>
+                        <td>${ent.kam_hua || '-'}</td>
+                        <td>${ent.commision || '-'}</td>
+                        <td>${ent.bacha || '-'}</td>
+                        <td>${ent.mila || '-'}</td>
+                        <td>${ent.bakaya || '-'}</td>
+                        <td>
+                            <button class="btn-del" onclick="delEntry('${ent.id}')">Del</button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
         }
 
         async function addEntry() {
