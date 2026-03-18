@@ -4,24 +4,20 @@ from pymongo import MongoClient
 from bson.objectid import ObjectId
 from dotenv import load_dotenv
 
-# .env file load karna
 load_dotenv()
 
 app = Flask(__name__)
 
-# MongoDB Connection
 MONGO_URI = os.getenv("MONGO_URI")
 client = MongoClient(MONGO_URI)
 db = client.hisab_pro_db
 locations_collection = db.locations
 entries_collection = db.entries
 
-# 1. Frontend Serve karna
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# 2. Locations API
 @app.route('/api/locations', methods=['GET', 'POST'])
 def handle_locations():
     if request.method == 'POST':
@@ -38,21 +34,24 @@ def handle_locations():
 @app.route('/api/locations/<loc_id>', methods=['DELETE'])
 def delete_location(loc_id):
     locations_collection.delete_one({"_id": ObjectId(loc_id)})
-    # Us location ki saari entries bhi delete kardo
     entries_collection.delete_many({"loc_id": loc_id})
     return jsonify({"success": True})
 
-# 3. Entries API
 @app.route('/api/entries/<loc_id>', methods=['GET', 'POST'])
 def handle_entries(loc_id):
     if request.method == 'POST':
         data = request.json
+        # Ab ek entry me saare columns aayenge
         new_entry = {
             "loc_id": loc_id,
-            "category": data['category'],
+            "date": data['date'],
             "details": data['details'],
-            "amount": data['amount'],
-            "date": data['date']
+            "saaman_gaya": data.get('saaman_gaya', ''),
+            "kam_hua": data.get('kam_hua', ''),
+            "commision": data.get('commision', ''),
+            "bacha": data.get('bacha', ''),
+            "mila": data.get('mila', ''),
+            "bakaya": data.get('bakaya', '')
         }
         result = entries_collection.insert_one(new_entry)
         new_entry['id'] = str(result.inserted_id)
@@ -63,10 +62,14 @@ def handle_entries(loc_id):
     for ent in entries_collection.find({"loc_id": loc_id}):
         entries.append({
             "id": str(ent['_id']),
-            "category": ent['category'],
-            "details": ent['details'],
-            "amount": ent['amount'],
-            "date": ent['date']
+            "date": ent.get('date', ''),
+            "details": ent.get('details', ''),
+            "saaman_gaya": ent.get('saaman_gaya', ''),
+            "kam_hua": ent.get('kam_hua', ''),
+            "commision": ent.get('commision', ''),
+            "bacha": ent.get('bacha', ''),
+            "mila": ent.get('mila', ''),
+            "bakaya": ent.get('bakaya', '')
         })
     return jsonify(entries)
 
