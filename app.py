@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Specify explicitly where templates are if needed, but default is 'templates' folder
 app = Flask(__name__)
 
 MONGO_URI = os.getenv("MONGO_URI")
@@ -16,6 +17,7 @@ entries_collection = db.entries
 
 @app.route('/')
 def index():
+    # Ye line tumhare index.html ko browser par bhejegi (CORS error nahi aayega isse)
     return render_template('index.html')
 
 @app.route('/api/locations', methods=['GET', 'POST'])
@@ -41,7 +43,7 @@ def delete_location(loc_id):
 def handle_entries(loc_id):
     if request.method == 'POST':
         data = request.json
-        # Ab ek entry me saare columns aayenge
+        # Ledger Style: Ek entry me saare 6 columns
         new_entry = {
             "loc_id": loc_id,
             "date": data['date'],
